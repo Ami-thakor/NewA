@@ -1,10 +1,8 @@
 Django
-
 numpy~=1.26.0
 resampy==0.4.3
 librosa==0.11.0
 s3tokenizer==0.2.0
-
 torchcodec==0.8.1
 transformers==4.46.3
 diffusers==0.29.0
@@ -15,5 +13,3 @@ safetensors==0.5.3
 sentencex==0.6.1
 pydub==0.25.1
 soundfile==0.13.1
-
-chatterbox-tts==0.1.7
