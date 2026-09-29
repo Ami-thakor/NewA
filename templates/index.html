@@ -1,0 +1,383 @@
+{% load static %}
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>MyTTS</title>
+
+    <link
+        rel="stylesheet"
+        href="{% static 'css/style.css' %}"
+    >
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+    <!-- HEADER -->
+
+    <header>
+
+        <h1>MyTTS</h1>
+
+        <button
+            type="button"
+            class="settings-btn"
+        >
+            ⚙ Settings
+        </button>
+
+    </header>
+
+
+    <!-- ADD VOICE -->
+
+    <div class="card">
+
+        <h2>Add Reference Voice</h2>
+
+
+        <div class="voice-upload">
+
+            <form
+                method="POST"
+                action="{% url 'upload_voice' %}"
+                enctype="multipart/form-data"
+            >
+
+                {% csrf_token %}
+
+
+                <div class="form-group">
+
+                    <label for="voiceName">
+                        Voice Name
+                    </label>
+
+                    <input
+                        type="text"
+                        id="voiceName"
+                        name="name"
+                        placeholder="e.g. Narrator"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group voice-file-group">
+
+                    <label for="referenceAudio">
+                        Reference Audio
+                    </label>
+
+                    <input
+                        type="file"
+                        id="referenceAudio"
+                        name="reference_audio"
+                        accept="audio/*"
+                        required
+                    >
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="save-voice-btn"
+                >
+                    🎙 Save Voice
+                </button>
+
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- TTS -->
+
+    <div class="card">
+
+        <h2>Text to Speech</h2>
+
+
+        <textarea
+            id="textInput"
+            maxlength="30000"
+            placeholder="Enter your text here..."
+        ></textarea>
+
+
+        <div class="char-count">
+
+            <span id="charCount">0</span>
+            / 30000
+
+        </div>
+
+
+        <!-- VOICE + MODEL -->
+
+        <div class="form-row">
+
+
+            <div class="form-group">
+
+                <label for="voice">
+                    Voice
+                </label>
+
+
+                <select
+                    id="voice"
+                    name="voice"
+                >
+
+                    <option value="">
+                        Select Voice
+                    </option>
+
+
+                    {% for voice in voices %}
+
+                    <option
+                        value="{{ voice.id }}"
+                        data-preview-url="{{ voice.reference_audio.url }}"
+                    >
+
+                        {{ voice.name }}
+
+                    </option>
+
+                    {% empty %}
+
+                    <option
+                        value=""
+                        disabled
+                    >
+                        No voices available
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+
+                <!-- PREVIEW -->
+
+                <div
+                    id="voicePreview"
+                    class="voice-preview"
+                >
+
+                    <div class="preview-title">
+                        Preview Voice
+                    </div>
+
+
+                    <audio
+                        id="voicePreviewPlayer"
+                        controls
+                        preload="metadata"
+                    ></audio>
+
+                </div>
+
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="model">
+                    TTS Model
+                </label>
+
+
+                <select id="model">
+
+                    <option value="chatterbox">
+                        Chatterbox
+                    </option>
+
+                </select>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- LANGUAGE + SEED -->
+
+        <div class="form-row">
+
+
+            <div class="form-group">
+
+                <label for="language">
+                    Language
+                </label>
+
+
+                <select id="language">
+
+                    <option value="hi">
+                        Hindi
+                    </option>
+
+                    <option value="en">
+                        English
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="seed">
+                    Seed
+                </label>
+
+
+                <input
+                    type="number"
+                    id="seed"
+                    value="12"
+                >
+
+            </div>
+
+
+        </div>
+
+
+        <!-- PACE -->
+
+        <div class="form-group pace-group">
+
+            <label for="pace">
+                CFG / Pace
+            </label>
+
+
+            <div class="range-container">
+
+                <input
+                    type="range"
+                    id="pace"
+                    min="0.2"
+                    max="1"
+                    step="0.05"
+                    value="0.5"
+                >
+
+
+                <span
+                    class="range-value"
+                    id="paceValue"
+                >
+                    0.50
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- GENERATE -->
+
+        <button
+            type="button"
+            class="generate-btn"
+            id="generateBtn"
+            data-url="{% url 'generate_tts' %}"
+        >
+
+            🎙 Generate Audio
+
+        </button>
+
+
+        <div
+            class="loading"
+            id="loading"
+        >
+            Generating audio...
+        </div>
+
+
+    </div>
+
+
+    <!-- OUTPUT -->
+
+    <div class="card">
+
+        <h2>Generated Audio</h2>
+
+
+        <div
+            class="audio-box"
+            id="audioBox"
+        >
+
+            <audio
+                id="audioPlayer"
+                controls
+            ></audio>
+
+
+            <a
+                id="downloadBtn"
+                class="download-btn"
+                download
+            >
+                ↓ Download
+            </a>
+
+        </div>
+
+
+        <div
+            class="empty-message"
+            id="emptyMessage"
+        >
+            No audio generated yet.
+        </div>
+
+
+    </div>
+
+
+</div>
+
+
+<script
+    src="{% static 'js/app.js' %}"
+></script>
+
+
+</body>
+
+</html>
